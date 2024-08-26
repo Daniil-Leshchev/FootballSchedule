@@ -45,14 +45,13 @@ def main():
 
     try:
         service = build("calendar", "v3", credentials=creds)
-        matches = create_events_list()
 
-        event = create_gcal_event(matches[0])
-        event = service.events().insert(calendarId=CALENDAR_ID, body=event).execute()
+        matches = create_events_list()
+        for match in matches:
+            event = service.events().insert(calendarId=CALENDAR_ID, body=create_gcal_event(match)).execute()
 
     except HttpError as error:
         print(f"An error occurred: {error}")
-
 
 if __name__ == "__main__":
     main()
