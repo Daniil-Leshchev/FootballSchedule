@@ -28,3 +28,20 @@ def get_opponent(match, fav_team):
     if teams[0].text.strip() == fav_team:
         return teams[1].text.strip()
     return teams[0].text.strip()
+    
+def create_events_list(matches):
+    match_list = []
+    for match in matches:
+        date = get_match_datetime(match)
+        if date[0][5:7] != next_month:
+            continue
+
+        match_list.append({
+            'summary': f'{FAV_TEAM} vs {get_opponent(match, FAV_TEAM)}',
+            'start_time': date[0],
+            'end_time': date[1]
+        })
+
+    return match_list
+
+print(create_events_list(matches))
