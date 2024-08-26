@@ -4,11 +4,10 @@ from dateutil.parser import parse as parse_date
 from dateutil.relativedelta import relativedelta
 import datetime
 
+FAV_TEAM = 'Real Madrid'
 page = req.get('https://www.skysports.com/real-madrid-fixtures')
 page_parsed = BeautifulSoup(page.content, 'html.parser')
-
 matches = page_parsed.find_all('div', class_='fixres__item')
-data = []
 
 now = datetime.datetime.now()
 next_month = f'0{now.month + 1}'
@@ -24,14 +23,8 @@ def get_match_datetime(match):
 
     return (start_time.isoformat(), end_time.isoformat())
 
-for match in matches:
-    date = get_match_datetime(match)
-    if date[0][5:7] != next_month:
-        continue
-
-    data.append({
-        'start_time': date[0],
-        'end_time': date[1]
-    })
-    
-print(len(data))
+def get_opponent(match, fav_team):
+    teams = match.find_all('span', class_='swap-text__target')
+    if teams[0].text.strip() == fav_team:
+        return teams[1].text.strip()
+    return teams[0].text.strip()
