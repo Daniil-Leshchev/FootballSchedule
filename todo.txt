@@ -1,14 +1,8 @@
-1. parsing using beatifulsoup4
-2. eng data to ru data (optional)
-3. creating an array of events(which are dicts i think)
-4. google calendar api authorisation
-5. creating events from raw data
-6. sending a request to api
-
-optionally:
+improve:
 1. script autorun
-2. time updates
-3. a thing to spot the differences between created events and new ones(escape the duplicates)
+2. proper work with timezones(schedule time on a website is local)
+3. time updates if smth changes
+4. a trick to spot the differences between created events and new ones(escape the duplicates)
 
 for other users and project growth:
 1. create requirements.txt file
