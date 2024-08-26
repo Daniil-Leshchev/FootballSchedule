@@ -39,8 +39,8 @@ def create_events_list():
 
         matches_list.append({
             'summary': f'{FAV_TEAM} vs {get_opponent(match, FAV_TEAM)}',
-            'start_time': date[0],
-            'end_time': date[1]
+            'start_time': date[0] + '+01:00',
+            'end_time': date[1] + '+01:00'
         })
 
     return matches_list
