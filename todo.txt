@@ -1,0 +1,12 @@
+1. parsing from flashscore using beatifulsoup4
+2. eng data to ru data (optional)
+3. creating an array of events(which are dicts i think)
+4. google calendar api authorisation
+5. creating events from raw data
+6. sending a request to api
+
+optionally:
+1. script autorun
+
+for other users and project growth:
+1. choosing your own team/teams to follow
