@@ -60,7 +60,7 @@ def format_month_number(month_number):
 def select_months():
     print('Please select months to load data from')
     print("It can be a single month in format 'August' or several months in format 'August-December'")
-    selected_month_range = input(Fore.CYAN + 'Months: ')
+    selected_month_range = input(Fore.CYAN + 'Month(s): ')
 
     if selected_month_range == '':
         raise ValueError(Fore.LIGHTRED_EX + 'Empty user input')
@@ -72,7 +72,7 @@ def select_months():
         end_month_number = convert_month_name_to_number(end)
 
         if start_month_number >= end_month_number:
-            raise ValueError(Fore.LIGHTRED_EX + 'Start month cannot be more than(or equal) end month')
+            raise ValueError(Fore.LIGHTRED_EX + 'Start month number cannot be more than(or equal) end month')
 
         for month_number in range(start_month_number, end_month_number + 1):
             selected_months.append(format_month_number(month_number))
@@ -138,4 +138,4 @@ def create_events_list():
             'end_time': date[1]
         })
 
-    return matches_list
+    return matches_list, selected_months

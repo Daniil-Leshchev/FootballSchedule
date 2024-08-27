@@ -7,6 +7,10 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from main import create_events_list
+from dateutil.parser import parse as parse_date
+from dateutil.relativedelta import relativedelta
+from datetime import datetime
+import json
 
 from colorama import init, Fore
 init(autoreset=True)
@@ -27,6 +31,25 @@ def create_gcal_event(match):
         }
     }
 
+def check_for_duplicates(service, months):
+    # нужна как минимум дата старта и конца для поиска событий
+    now = parse_date(str(datetime.now()))
+    start = now + relativedelta(
+        month=int(months[0]), day=1, year=now.year,
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    end = start + relativedelta(months=+len(months))
+
+    timezone = None
+    with open('config.json', 'r') as f:
+        timezone = json.load(f)['timezone']
+    events = service.events().list(
+        calendarId=CALENDAR_ID, orderBy='startTime',
+        singleEvents=True, timeMin=start.isoformat() + timezone, 
+        timeMax=end.isoformat() + timezone
+    ).execute()
+    return events['items']
+
 def main():
     creds = None
     if os.path.exists("token.json"):
@@ -45,17 +68,27 @@ def main():
     try:
         service = build("calendar", "v3", credentials=creds)
 
-        matches = create_events_list()
+        matches, selected_months = create_events_list()
         if matches == []:
             print(Fore.LIGHTRED_EX + 'No events found')
+            return
 
-        for match in matches:
-            event = service.events().insert(calendarId=CALENDAR_ID, body=create_gcal_event(match)).execute()
+        duplicates = check_for_duplicates(service, selected_months)
+        for original_match in matches:
+            for potential_match in duplicates:
+                if original_match['summary'] == potential_match['summary'] or original_match['start_time'][:10] == potential_match['start']['dateTime'][:10]:
+                    print(Fore.LIGHTYELLOW_EX + f'Duplicate found {potential_match['summary'], potential_match['start']['dateTime']}')
+                    break
+            else:
+                service.events().insert(calendarId=CALENDAR_ID, body=create_gcal_event(original_match)).execute()
         
-        if len(matches) == 1:
+        matches_added = len(matches) - len(duplicates)
+        if matches_added == 0:
+            print(Fore.LIGHTRED_EX + 'No events were added')
+        elif matches_added == 1:
             print(Fore.GREEN + '1 event successfully created')
         else:
-            print(Fore.GREEN + f'{len(matches)} events were successfully created')
+            print(Fore.GREEN + f'{matches_added} events were successfully created')
 
     except HttpError as error:
         print(f"An error occurred: {error}")
