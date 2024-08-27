@@ -2,10 +2,12 @@ import requests as req
 from bs4 import BeautifulSoup
 from dateutil.parser import parse as parse_date
 from dateutil.relativedelta import relativedelta
-import datetime
 
 FAV_TEAM = 'Real Madrid'
 TIMEZONE = '+01:00'
+
+from colorama import init, Fore
+init(autoreset=True)
 
 def month_name_to_number(month_name):
     months = {
@@ -27,7 +29,7 @@ def month_name_to_number(month_name):
         return months[month_name.capitalize()]
 
     except KeyError:
-        raise ValueError(f"Invalid month name, check your spelling: {month_name}")
+        raise ValueError(Fore.LIGHTRED_EX + f"Invalid month name, check your spelling: {month_name}")
 
 def format_month_number(month_number):
     if len(str(month_number)) == 1:
@@ -37,7 +39,7 @@ def format_month_number(month_number):
 def select_months():
     print('Please select months to load data from')
     print("It can be a single month in format 'August' or several months in format 'August-December'")
-    user_input = input('Months: ')
+    user_input = input(Fore.CYAN + 'Months: ')
 
     selected_months = []
     if '-' in user_input:
@@ -46,7 +48,7 @@ def select_months():
         end_month_number = month_name_to_number(end)
 
         if start_month_number >= end_month_number:
-            raise ValueError('Start month cannot be more than(or equal) end month')
+            raise ValueError(Fore.LIGHTRED_EX + 'Start month cannot be more than(or equal) end month')
 
         for month_number in range(start_month_number, end_month_number + 1):
             selected_months.append(format_month_number(month_number))
@@ -84,7 +86,7 @@ def create_events_list():
     for match in get_matches():
         date = get_match_datetime(match, TIMEZONE)
         month_number = date[0][5:7]
-        if month_number not in selected_months:#date[0][5:7] means month number
+        if month_number not in selected_months:
             continue
 
         matches_list.append({

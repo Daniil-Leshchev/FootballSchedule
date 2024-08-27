@@ -8,6 +8,9 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from main import create_events_list
 
+from colorama import init, Fore
+init()
+
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 CALENDAR_ID = 'g22faufip96tqjv8cjv6cflt00@group.calendar.google.com'
 
@@ -46,9 +49,11 @@ def main():
         for match in matches:
             event = service.events().insert(calendarId=CALENDAR_ID, body=create_gcal_event(match)).execute()
         if matches == []:
-            print('No events found')
+            print(Fore.LIGHTRED_EX + 'No events found')
+        elif len(matches) == 1:
+            print(Fore.GREEN + '1 event successfully created')
         else:
-            print('Events successfully created')
+            print(Fore.GREEN + f'{len(matches)} events were successfully created')
 
     except HttpError as error:
         print(f"An error occurred: {error}")
