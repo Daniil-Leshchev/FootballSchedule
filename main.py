@@ -17,10 +17,14 @@ def team_config():
         return (team, timezone)
     with open('config.txt', 'w') as f:
         team = input(Fore.CYAN + 'Type in your team to follow: ')
-        timezone = input(Fore.CYAN + "Choose your team timezone in format: '+01:00' relative to UTC time: ") + '\n'
+        timezone = input(Fore.CYAN + "Choose your team timezone in format: '+00:00' relative to UTC time: ") + '\n'
         print()
         f.writelines([team + '\n', timezone])
         return (team, timezone)
+
+def create_page_link(team):
+    formatted_team_name = team.replace(' ', '-').lower()
+    return f'https://www.skysports.com/{formatted_team_name}-fixtures'
 
 def month_name_to_number(month_name):
     months = {
@@ -73,8 +77,8 @@ def select_months():
 
     return selected_months
 
-def get_matches():
-    page = req.get('https://www.skysports.com/real-madrid-fixtures')
+def get_matches(user_team):
+    page = req.get(create_page_link(user_team))
     page_parsed = BeautifulSoup(page.content, 'html.parser')
 
     return page_parsed.find_all('div', class_='fixres__item')
@@ -112,7 +116,8 @@ def create_events_list():
 
     matches_list = []
     selected_months = select_months()
-    for match in get_matches():
+
+    for match in get_matches(user_team):
         date = get_match_datetime(match, user_timezone)
         month_number = date[0][5:7]
         if month_number not in selected_months:
