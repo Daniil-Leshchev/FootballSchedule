@@ -7,10 +7,53 @@ import datetime
 FAV_TEAM = 'Real Madrid'
 TIMEZONE = '+01:00'
 
-#select months to select matches from
-def select_month():
-    now = datetime.datetime.now()
-    return f'0{now.month + 1}'
+def month_name_to_number(month_name):
+    months = {
+        "January": 1,
+        "February": 2,
+        "March": 3,
+        "April": 4,
+        "May": 5,
+        "June": 6,
+        "July": 7,
+        "August": 8,
+        "September": 9,
+        "October":  10,
+        "November": 11,
+        "December": 12
+    }
+
+    try:
+        return months[month_name.capitalize()]
+
+    except KeyError:
+        raise ValueError(f"Invalid month name, check your spelling: {month_name}")
+
+def format_month_number(month_number):
+    if len(str(month_number)) == 1:
+        return f'0{month_number}'
+    return str(month_number)
+
+def select_months():
+    print('Please select months to load data from')
+    print("It can be a single month in format 'August' or several months in format 'August-December'")
+    user_input = input('Months: ')
+
+    selected_months = []
+    if '-' in user_input:
+        start, end = user_input.split('-')
+        start_month_number = month_name_to_number(start)
+        end_month_number = month_name_to_number(end)
+
+        if start_month_number >= end_month_number:
+            raise ValueError('Start month cannot be more than(or equal) end month')
+
+        for month_number in range(start_month_number, end_month_number + 1):
+            selected_months.append(format_month_number(month_number))
+    elif user_input != '':
+        selected_months.append(format_month_number(month_name_to_number(user_input)))
+
+    return selected_months
 
 def get_matches():
     page = req.get('https://www.skysports.com/real-madrid-fixtures')
@@ -37,10 +80,11 @@ def get_opponent(match):
 
 def create_events_list():
     matches_list = []
+    selected_months = select_months()
     for match in get_matches():
         date = get_match_datetime(match, TIMEZONE)
         month_number = date[0][5:7]
-        if month_number != select_month():#date[0][5:7] means month number
+        if month_number not in selected_months:#date[0][5:7] means month number
             continue
 
         matches_list.append({

@@ -45,7 +45,10 @@ def main():
         matches = create_events_list()
         for match in matches:
             event = service.events().insert(calendarId=CALENDAR_ID, body=create_gcal_event(match)).execute()
-        print('Events successfully created')
+        if matches == []:
+            print('No events found')
+        else:
+            print('Events successfully created')
 
     except HttpError as error:
         print(f"An error occurred: {error}")
