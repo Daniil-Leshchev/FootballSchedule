@@ -16,13 +16,11 @@ def create_gcal_event(match):
         'summary': match['summary'],
 
         'start': {
-            'dateTime': match['start_time'],
-            'timezone': 'Spain/Madrid'
+            'dateTime': match['start_time']
         },
 
         'end': {
-            'dateTime': match['end_time'],
-            'timezone': 'Spain/Madrid'
+            'dateTime': match['end_time']
         }
     }
 
@@ -35,9 +33,7 @@ def main():
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                "credentials.json", SCOPES
-            )
+            flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
         with open("token.json", "w") as token:
@@ -49,6 +45,7 @@ def main():
         matches = create_events_list()
         for match in matches:
             event = service.events().insert(calendarId=CALENDAR_ID, body=create_gcal_event(match)).execute()
+        print('Events successfully created')
 
     except HttpError as error:
         print(f"An error occurred: {error}")
