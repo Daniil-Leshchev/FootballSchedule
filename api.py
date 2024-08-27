@@ -46,11 +46,13 @@ def main():
         service = build("calendar", "v3", credentials=creds)
 
         matches = create_events_list()
-        for match in matches:
-            event = service.events().insert(calendarId=CALENDAR_ID, body=create_gcal_event(match)).execute()
         if matches == []:
             print(Fore.LIGHTRED_EX + 'No events found')
-        elif len(matches) == 1:
+
+        for match in matches:
+            event = service.events().insert(calendarId=CALENDAR_ID, body=create_gcal_event(match)).execute()
+        
+        if len(matches) == 1:
             print(Fore.GREEN + '1 event successfully created')
         else:
             print(Fore.GREEN + f'{len(matches)} events were successfully created')

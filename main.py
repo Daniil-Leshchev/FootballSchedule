@@ -24,8 +24,7 @@ def get_team_config():
         return (team, timezone)
 
 def create_page_link(team):
-    formatted_team_name = team.replace(' ', '-').lower()
-    return f'https://www.skysports.com/{formatted_team_name}-fixtures'
+    return f'https://www.skysports.com/{team.replace(' ', '-').lower()}-fixtures'
 
 def convert_month_name_to_number(month_name):
     months = {
@@ -50,9 +49,7 @@ def convert_month_name_to_number(month_name):
         raise ValueError(Fore.LIGHTRED_EX + f"Invalid month name, check your spelling: {month_name}")
 
 def format_month_number(month_number):
-    if len(str(month_number)) == 1:
-        return f'0{month_number}'
-    return str(month_number)
+    return f'0{month_number}' if len(str(month_number)) == 1 else str(month_number)
 
 def select_months():
     print('Please select months to load data from')
