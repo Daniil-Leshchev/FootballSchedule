@@ -9,7 +9,7 @@ import re
 from colorama import init, Fore
 init(autoreset=True)
 
-def team_config():
+def get_team_config():
     if os.path.exists('config.txt'):
         f = open('config.txt')
         team = f.readline()
@@ -19,6 +19,7 @@ def team_config():
         team = input(Fore.CYAN + 'Type in your team to follow: ')
         timezone = input(Fore.CYAN + "Choose your team timezone in format: '+00:00' relative to UTC time: ") + '\n'
         print()
+
         f.writelines([team + '\n', timezone])
         return (team, timezone)
 
@@ -26,7 +27,7 @@ def create_page_link(team):
     formatted_team_name = team.replace(' ', '-').lower()
     return f'https://www.skysports.com/{formatted_team_name}-fixtures'
 
-def month_name_to_number(month_name):
+def convert_month_name_to_number(month_name):
     months = {
         "January": 1,
         "February": 2,
@@ -64,8 +65,8 @@ def select_months():
     selected_months = []
     if '-' in selected_month_range:
         start, end = selected_month_range.split('-')
-        start_month_number = month_name_to_number(start)
-        end_month_number = month_name_to_number(end)
+        start_month_number = convert_month_name_to_number(start)
+        end_month_number = convert_month_name_to_number(end)
 
         if start_month_number >= end_month_number:
             raise ValueError(Fore.LIGHTRED_EX + 'Start month cannot be more than(or equal) end month')
@@ -73,13 +74,16 @@ def select_months():
         for month_number in range(start_month_number, end_month_number + 1):
             selected_months.append(format_month_number(month_number))
     else:
-        selected_months.append(format_month_number(month_name_to_number(selected_month_range)))
+        selected_months.append(format_month_number(convert_month_name_to_number(selected_month_range)))
 
     return selected_months
 
 def get_matches(user_team):
     page = req.get(create_page_link(user_team))
     page_parsed = BeautifulSoup(page.content, 'html.parser')
+
+    if page_parsed.find('div', class_='not-found'):
+        raise ValueError(Fore.LIGHTRED_EX + 'Your team is not found, check your spelling in the configuration')
 
     return page_parsed.find_all('div', class_='fixres__item')
 
@@ -101,7 +105,7 @@ def get_opponent(match, user_team):
     return teams[0].text.strip()
 
 def create_events_list():
-    config_results = team_config()
+    config_results = get_team_config()
     user_team = config_results[0].rstrip()
     user_timezone = config_results[1].rstrip()
 
@@ -109,7 +113,7 @@ def create_events_list():
         os.remove('config.txt')
         raise ValueError(Fore.LIGHTRED_EX + 'No team specified')
     
-    if re.match(r"^[+-]\d{1,2}:\d{2}$", user_timezone) is None:
+    if re.match(r"^[+-]\d{1,2}:\d{2}$", user_timezone) is None:#check if user_timezone is specified correctly via regex
         os.remove('config.txt')
         raise ValueError(Fore.LIGHTRED_EX + 'Invalid timezone')
     
