@@ -4,6 +4,7 @@ from dateutil.parser import parse as parse_date
 from dateutil.relativedelta import relativedelta
 
 import os.path
+import re
 
 from colorama import init, Fore
 init(autoreset=True)
@@ -16,7 +17,7 @@ def team_config():
         return (team, timezone)
     with open('config.txt', 'w') as f:
         team = input(Fore.CYAN + 'Type in your team to follow: ')
-        timezone = input(Fore.CYAN + "Choose your timezone in format: '+01:00' relative to UTC time: ") + '\n'
+        timezone = input(Fore.CYAN + "Choose your team timezone in format: '+01:00' relative to UTC time: ") + '\n'
         print()
         f.writelines([team + '\n', timezone])
         return (team, timezone)
@@ -99,6 +100,15 @@ def create_events_list():
     config_results = team_config()
     user_team = config_results[0].rstrip()
     user_timezone = config_results[1].rstrip()
+
+    if user_team == '':
+        os.remove('config.txt')
+        raise ValueError(Fore.LIGHTRED_EX + 'No team specified')
+    
+    if re.match(r"^[+-]\d{1,2}:\d{2}$", user_timezone) is None:
+        os.remove('config.txt')
+        raise ValueError(Fore.LIGHTRED_EX + 'Invalid timezone')
+    
 
     matches_list = []
     selected_months = select_months()
