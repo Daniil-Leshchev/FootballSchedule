@@ -5,23 +5,29 @@ from dateutil.relativedelta import relativedelta
 
 import os.path
 import re
+import json
 
 from colorama import init, Fore
 init(autoreset=True)
 
 def get_team_config():
-    if os.path.exists('config.txt'):
-        f = open('config.txt')
-        team = f.readline()
-        timezone = f.readline()
-        return (team, timezone)
-    with open('config.txt', 'w') as f:
-        team = input(Fore.CYAN + 'Type in your team to follow: ')
-        timezone = input(Fore.CYAN + "Choose your team timezone in format: '+00:00' relative to UTC time: ") + '\n'
-        print()
+    filename = 'config.json'
 
-        f.writelines([team + '\n', timezone])
-        return (team, timezone)
+    if os.path.exists(filename):
+        with open(filename, 'r') as f:
+            return json.load(f)
+    
+    team = input(Fore.CYAN + 'Type in your team to follow: ')
+    timezone = input(Fore.CYAN + "Choose your team timezone in format: '+00:00' relative to UTC time: ")
+    print()
+    json_data = {
+        'team': team,
+        'timezone': timezone
+    }
+
+    with open(filename, 'w') as f:
+        json.dump(json_data, f, indent=4)
+    return json_data
 
 def create_page_link(team):
     return f'https://www.skysports.com/{team.replace(' ', '-').lower()}-fixtures'
@@ -106,17 +112,16 @@ def get_opponent(match, user_team):
 
 def create_events_list():
     config_results = get_team_config()
-    user_team = config_results[0].rstrip()
-    user_timezone = config_results[1].rstrip()
+    user_team = config_results['team']
+    user_timezone = config_results['timezone']
 
     if user_team == '':
-        os.remove('config.txt')
+        os.remove('config.json')
         raise ValueError(Fore.LIGHTRED_EX + 'No team specified')
     
     if re.match(r"^[+-]\d{1,2}:\d{2}$", user_timezone) is None:#check if user_timezone is specified correctly via regex
-        os.remove('config.txt')
+        os.remove('config.json')
         raise ValueError(Fore.LIGHTRED_EX + 'Invalid timezone')
-    
 
     matches_list = []
     selected_months = select_months()
