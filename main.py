@@ -39,11 +39,14 @@ def format_month_number(month_number):
 def select_months():
     print('Please select months to load data from')
     print("It can be a single month in format 'August' or several months in format 'August-December'")
-    user_input = input(Fore.CYAN + 'Months: ')
+    selected_month_range = input(Fore.CYAN + 'Months: ')
+
+    if selected_month_range == '':
+        raise ValueError(Fore.LIGHTRED_EX + 'Empty user input')
 
     selected_months = []
-    if '-' in user_input:
-        start, end = user_input.split('-')
+    if '-' in selected_month_range:
+        start, end = selected_month_range.split('-')
         start_month_number = month_name_to_number(start)
         end_month_number = month_name_to_number(end)
 
@@ -52,8 +55,8 @@ def select_months():
 
         for month_number in range(start_month_number, end_month_number + 1):
             selected_months.append(format_month_number(month_number))
-    elif user_input != '':
-        selected_months.append(format_month_number(month_name_to_number(user_input)))
+    else:
+        selected_months.append(format_month_number(month_name_to_number(selected_month_range)))
 
     return selected_months
 
