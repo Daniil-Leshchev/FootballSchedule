@@ -9,7 +9,7 @@ from googleapiclient.errors import HttpError
 from main import create_events_list
 
 from colorama import init, Fore
-init()
+init(autoreset=True)
 
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 CALENDAR_ID = 'g22faufip96tqjv8cjv6cflt00@group.calendar.google.com'

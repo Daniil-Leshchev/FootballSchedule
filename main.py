@@ -3,11 +3,23 @@ from bs4 import BeautifulSoup
 from dateutil.parser import parse as parse_date
 from dateutil.relativedelta import relativedelta
 
-FAV_TEAM = 'Real Madrid'
-TIMEZONE = '+01:00'
+import os.path
 
 from colorama import init, Fore
 init(autoreset=True)
+
+def team_config():
+    if os.path.exists('config.txt'):
+        f = open('config.txt')
+        team = f.readline()
+        timezone = f.readline()
+        return (team, timezone)
+    with open('config.txt', 'w') as f:
+        team = input(Fore.CYAN + 'Type in your team to follow: ')
+        timezone = input(Fore.CYAN + "Choose your timezone in format: '+01:00' relative to UTC time: ") + '\n'
+        print()
+        f.writelines([team + '\n', timezone])
+        return (team, timezone)
 
 def month_name_to_number(month_name):
     months = {
@@ -77,23 +89,27 @@ def get_match_datetime(match, timezone):
 
     return (start_time.isoformat() + timezone, end_time.isoformat() + timezone)
 
-def get_opponent(match):
+def get_opponent(match, user_team):
     teams = match.find_all('span', class_='swap-text__target')
-    if teams[0].text.strip() == FAV_TEAM:
+    if teams[0].text.strip() == user_team:
         return teams[1].text.strip()
     return teams[0].text.strip()
 
 def create_events_list():
+    config_results = team_config()
+    user_team = config_results[0].rstrip()
+    user_timezone = config_results[1].rstrip()
+
     matches_list = []
     selected_months = select_months()
     for match in get_matches():
-        date = get_match_datetime(match, TIMEZONE)
+        date = get_match_datetime(match, user_timezone)
         month_number = date[0][5:7]
         if month_number not in selected_months:
             continue
 
         matches_list.append({
-            'summary': f'{FAV_TEAM} vs {get_opponent(match)}',
+            'summary': f'{user_team} vs {get_opponent(match, user_team)}',
             'start_time': date[0],
             'end_time': date[1]
         })
