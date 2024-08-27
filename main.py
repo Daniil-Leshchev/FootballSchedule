@@ -76,13 +76,16 @@ def select_months():
     return selected_months
 
 def get_matches(user_team):
-    page = req.get(create_page_link(user_team))
-    page_parsed = BeautifulSoup(page.content, 'html.parser')
+    try:
+        page = req.get(create_page_link(user_team))
+        page_parsed = BeautifulSoup(page.content, 'html.parser')
 
-    if page_parsed.find('div', class_='not-found'):
-        raise ValueError(Fore.LIGHTRED_EX + 'Your team is not found, check your spelling in the configuration')
+        if page_parsed.find('div', class_='not-found'):
+            raise ValueError(Fore.LIGHTRED_EX + 'Your team is not found, check your spelling in the configuration')
 
-    return page_parsed.find_all('div', class_='fixres__item')
+        return page_parsed.find_all('div', class_='fixres__item')
+    except req.exceptions.RequestException as error:
+        print(f'Error occured while parsing the source site {error}')
 
 def get_match_datetime(match, timezone):
     date = match.find_previous_sibling('h4', class_='fixres__header2').text.strip()
