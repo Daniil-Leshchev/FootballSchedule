@@ -32,7 +32,6 @@ def create_gcal_event(match):
     }
 
 def check_for_duplicates(service, months):
-    # нужна как минимум дата старта и конца для поиска событий
     now = parse_date(str(datetime.now()))
     start = now + relativedelta(
         month=int(months[0]), day=1, year=now.year,
@@ -41,8 +40,11 @@ def check_for_duplicates(service, months):
     end = start + relativedelta(months=+len(months))
 
     timezone = None
-    with open('config.json', 'r') as f:
-        timezone = json.load(f)['timezone']
+    try:
+        with open('config.json', 'r') as f:
+            timezone = json.load(f)['timezone']
+    except (FileNotFoundError, json.JSONDecodeError):
+        raise ValueError('Timezone cannot be read from your config file, try again')
     events = service.events().list(
         calendarId=CALENDAR_ID, orderBy='startTime',
         singleEvents=True, timeMin=start.isoformat() + timezone, 
