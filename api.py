@@ -31,7 +31,7 @@ def create_gcal_event(match):
         }
     }
 
-def check_for_duplicates(service, months):
+def select_month_matches(service, months):
     now = parse_date(str(datetime.now()))
     start = now + relativedelta(
         month=int(months[0]), day=1, year=now.year,
@@ -69,26 +69,33 @@ def main():
 
     try:
         service = build("calendar", "v3", credentials=creds)
-
         matches, selected_months = create_events_list()
         if matches == []:
             print(Fore.LIGHTRED_EX + 'No events found')
             return
 
-        duplicates = check_for_duplicates(service, selected_months)
-        for original_match in matches:
-            for potential_match in duplicates:
-                if original_match['summary'] == potential_match['summary'] or original_match['start_time'][:10] == potential_match['start']['dateTime'][:10]:
-                    print(Fore.LIGHTYELLOW_EX + f'Duplicate found {potential_match['summary'], potential_match['start']['dateTime']}')
-                    break
+        potential_duplicates = select_month_matches(service, selected_months)
+        count_duplicates = 0
+        for match in matches:
+            for potential_duplicate in potential_duplicates:
+                if match['summary'] == potential_duplicate['summary']:
+                    possible_dates = []
+                    match_date = parse_date(match['start_time']).date()
+                    for delta in range(-1, 2):
+                        possible_dates.append((match_date + relativedelta(days=+delta)).strftime('%Y-%m-%d'))
+                    potential_duplicate_date = parse_date(potential_duplicate['start']['dateTime']).date()
+                    if str(potential_duplicate_date) in possible_dates:
+                        print(Fore.LIGHTYELLOW_EX + f'Duplicate found {potential_duplicate['summary'], potential_duplicate['start']['dateTime']}')
+                        count_duplicates += 1
+                        break
             else:
-                service.events().insert(calendarId=CALENDAR_ID, body=create_gcal_event(original_match)).execute()
+                service.events().insert(calendarId=CALENDAR_ID, body=create_gcal_event(match)).execute()
         
-        matches_added = len(matches) - len(duplicates)
+        matches_added = len(matches) - count_duplicates
         if matches_added == 0:
             print(Fore.LIGHTRED_EX + 'No events were added')
         elif matches_added == 1:
-            print(Fore.GREEN + '1 event successfully created')
+            print(Fore.GREEN + '1 event was successfully created')
         else:
             print(Fore.GREEN + f'{matches_added} events were successfully created')
 
