@@ -6,6 +6,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from main import create_events_list
+from main import SOURCE_TIMEZONE
 from dateutil.parser import parse as parse_date
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
@@ -38,16 +39,10 @@ def select_month_matches(service, months):
     )
     end = start + relativedelta(months=+len(months))
 
-    timezone = None
-    try:
-        with open('config.json', 'r') as f:
-            timezone = json.load(f)['timezone']
-    except (FileNotFoundError, json.JSONDecodeError):
-        raise ValueError('Timezone cannot be read from your config file, try again')
     events = service.events().list(
         calendarId=CALENDAR_ID, orderBy='startTime',
-        singleEvents=True, timeMin=start.isoformat() + timezone, 
-        timeMax=end.isoformat() + timezone
+        singleEvents=True, timeMin=start.isoformat() + SOURCE_TIMEZONE, 
+        timeMax=end.isoformat() + SOURCE_TIMEZONE
     ).execute()
     return events['items']
 
@@ -99,7 +94,7 @@ def main():
                         event['end']['dateTime'] = match['end_time']
 
                         updated_event = service.events().update(calendarId=CALENDAR_ID, eventId=event['id'], body=event).execute()
-                        print(Fore.LIGHTMAGENTA_EX + f'Time for the match {match['summary']} has changed to {match_datetime_start}')
+                        print(Fore.LIGHTMAGENTA_EX + f'Time for the match {match['summary']} has changed to {match_start}')
                         count_updated += 1
                         break
             else:

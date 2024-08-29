@@ -10,6 +10,8 @@ import json
 from colorama import init, Fore
 init(autoreset=True)
 
+SOURCE_TIMEZONE = '+01:00'
+
 def get_team_config():
     filename = 'config.json'
 
@@ -18,13 +20,10 @@ def get_team_config():
             return json.load(f)
     
     team = input(Fore.CYAN + 'Type in your team to follow: ')
-    timezone = input(Fore.CYAN + "Choose your team timezone in format: '+00:00' relative to UTC time: ")
     print()
     json_data = {
         'team': team,
-        'timezone': timezone
     }
-
     with open(filename, 'w') as f:
         json.dump(json_data, f, indent=4)
     return json_data
@@ -93,7 +92,7 @@ def get_matches(user_team):
     except req.exceptions.RequestException as error:
         print(f'Error occured while parsing the source site {error}')
 
-def get_match_datetime(match, timezone):
+def get_match_datetime(match):
     date = match.find_previous_sibling('h4', class_='fixres__header2').text.strip()
     year = match.find_previous_sibling('h3', class_='fixres__header1').text[-4:]
     time = match.find('span', class_='matches__date').text.strip()
@@ -102,7 +101,7 @@ def get_match_datetime(match, timezone):
     start_time = parse_date(full_date)
     end_time = start_time + relativedelta(hours=+2)#setting match duration
 
-    return (start_time.isoformat() + timezone, end_time.isoformat() + timezone)
+    return (start_time.isoformat() + SOURCE_TIMEZONE, end_time.isoformat() + SOURCE_TIMEZONE)
 
 def get_opponent(match, user_team):
     teams = match.find_all('span', class_='swap-text__target')
@@ -113,21 +112,16 @@ def get_opponent(match, user_team):
 def create_events_list():
     config_results = get_team_config()
     user_team = config_results['team']
-    user_timezone = config_results['timezone']
 
     if user_team == '':
         os.remove('config.json')
         raise ValueError(Fore.LIGHTRED_EX + 'No team specified')
     
-    if re.match(r"^[+-]\d{1,2}:\d{2}$", user_timezone) is None:#check if user_timezone is specified correctly via regex
-        os.remove('config.json')
-        raise ValueError(Fore.LIGHTRED_EX + 'Invalid timezone')
-
     matches_list = []
     selected_months = select_months()
 
     for match in get_matches(user_team):
-        date = get_match_datetime(match, user_timezone)
+        date = get_match_datetime(match)
         month_number = date[0][5:7]
         if month_number not in selected_months:
             continue
