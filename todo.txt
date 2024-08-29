@@ -1,7 +1,6 @@
 improve:
 1. script autorun
-2. proper work with timezones(schedule time on a website is local)
-3. difficulties with month numbers. how to handle smth like december-february?(dec = 12, feb = 02)
+2. difficulties with month numbers. how to handle smth like december-february?(dec = 12, feb = 02)
 
 for other users and project growth:
 1. create requirements.txt file
