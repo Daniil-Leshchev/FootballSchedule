@@ -139,3 +139,13 @@ def create_events_list():
         })
 
     return matches_list, selected_months
+
+# import pytz
+# from datetime import datetime
+# # Define the IANA time zone
+# iana_timezone = "America/Los_Angeles"
+
+# # Create a `pytz.timezone` object
+# timezone = pytz.timezone(iana_timezone)
+# print(datetime.now())
+# print(timezone.utcoffset(datetime.now()))

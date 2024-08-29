@@ -11,6 +11,7 @@ from dateutil.parser import parse as parse_date
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
 import json
+from pytz import utc as UTC
 
 from colorama import init, Fore
 init(autoreset=True)
@@ -76,15 +77,13 @@ def main():
 
         potential_duplicates = select_month_matches(service, selected_months)
         count_duplicates = 0
+        
         for match in matches:
             for potential_duplicate in potential_duplicates:
                 if match['summary'] == potential_duplicate['summary']:
-                    possible_dates = []
-                    match_date = parse_date(match['start_time']).date()
-                    for delta in range(-1, 2):
-                        possible_dates.append((match_date + relativedelta(days=+delta)).strftime('%Y-%m-%d'))
-                    potential_duplicate_date = parse_date(potential_duplicate['start']['dateTime']).date()
-                    if str(potential_duplicate_date) in possible_dates:
+                    match_datetime = parse_date(match['start_time']).astimezone(UTC)
+                    potential_duplicate_datetime = parse_date(potential_duplicate['start']['dateTime']).astimezone(UTC)
+                    if match_datetime == potential_duplicate_datetime:  
                         print(Fore.LIGHTYELLOW_EX + f'Duplicate found {potential_duplicate['summary'], potential_duplicate['start']['dateTime']}')
                         count_duplicates += 1
                         break
