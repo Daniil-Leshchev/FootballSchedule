@@ -71,11 +71,12 @@ def main():
             print(Fore.LIGHTRED_EX + 'No events found')
             return
 
-        potential_duplicates = select_month_matches(service, selected_months)
+        month_events = select_month_matches(service, selected_months)
         count_duplicates = 0
         count_updated = 0
         
         for match in matches:
+            potential_duplicates = [event for event in month_events if parse_datetime_utc(event['start']['dateTime']).date() == parse_datetime_utc(match['start_time']).date()]
             for potential_duplicate in potential_duplicates:
                 if match['summary'] == potential_duplicate['summary']:
                     match_start = parse_datetime_utc(match['start_time'])
@@ -88,7 +89,7 @@ def main():
                         count_duplicates += 1
                         break
 
-                    elif match_start.date() == potential_duplicate_start.date():
+                    else:
                         event = service.events().get(calendarId=CALENDAR_ID, eventId=potential_duplicate['id']).execute()
                         event['start']['dateTime'] = match['start_time']
                         event['end']['dateTime'] = match['end_time']
