@@ -1,10 +1,8 @@
 improve:
 1. script autorun
 2. proper work with timezones(schedule time on a website is local)
-3. time updates if smth changes
-4. a trick to spot the differences between created events and new ones(escape the duplicates)
-5. difficulties with month numbers. how to handle smth like december-february?(dec = 12, feb = 02)
+3. difficulties with month numbers. how to handle smth like december-february?(dec = 12, feb = 02)
 
 for other users and project growth:
 1. create requirements.txt file
-2. choosing your own team/teams to follow
+2. choosing many teams to follow

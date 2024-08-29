@@ -88,8 +88,8 @@ def get_matches(user_team):
 
         if page_parsed.find('div', class_='not-found'):
             raise ValueError(Fore.LIGHTRED_EX + 'Your team is not found, check your spelling in the configuration')
-
         return page_parsed.find_all('div', class_='fixres__item')
+        
     except req.exceptions.RequestException as error:
         print(f'Error occured while parsing the source site {error}')
 
@@ -139,13 +139,3 @@ def create_events_list():
         })
 
     return matches_list, selected_months
-
-# import pytz
-# from datetime import datetime
-# # Define the IANA time zone
-# iana_timezone = "America/Los_Angeles"
-
-# # Create a `pytz.timezone` object
-# timezone = pytz.timezone(iana_timezone)
-# print(datetime.now())
-# print(timezone.utcoffset(datetime.now()))

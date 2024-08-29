@@ -1,6 +1,5 @@
 import datetime
 import os.path
-
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -12,7 +11,6 @@ from dateutil.relativedelta import relativedelta
 from datetime import datetime
 import json
 from pytz import utc as UTC
-
 from colorama import init, Fore
 init(autoreset=True)
 
@@ -53,6 +51,9 @@ def select_month_matches(service, months):
     ).execute()
     return events['items']
 
+def parse_datetime_utc(datetime_str):
+    return parse_date(datetime_str).astimezone(UTC)
+
 def main():
     creds = None
     if os.path.exists("token.json"):
@@ -77,26 +78,40 @@ def main():
 
         potential_duplicates = select_month_matches(service, selected_months)
         count_duplicates = 0
+        count_updated = 0
         
         for match in matches:
             for potential_duplicate in potential_duplicates:
                 if match['summary'] == potential_duplicate['summary']:
-                    match_datetime = parse_date(match['start_time']).astimezone(UTC)
-                    potential_duplicate_datetime = parse_date(potential_duplicate['start']['dateTime']).astimezone(UTC)
-                    if match_datetime == potential_duplicate_datetime:  
-                        print(Fore.LIGHTYELLOW_EX + f'Duplicate found {potential_duplicate['summary'], potential_duplicate['start']['dateTime']}')
+                    match_start = parse_datetime_utc(match['start_time'])
+                    match_end = parse_datetime_utc(match['end_time'])
+                    potential_duplicate_start = parse_datetime_utc(potential_duplicate['start']['dateTime'])
+                    potential_duplicate_end = parse_datetime_utc(potential_duplicate['end']['dateTime'])
+                    
+                    if match_start == potential_duplicate_start and match_end == potential_duplicate_end:  
+                        print(Fore.LIGHTYELLOW_EX + f'Duplicate found: {potential_duplicate['summary'], potential_duplicate['start']['dateTime']}')
                         count_duplicates += 1
+                        break
+
+                    elif match_start.date() == potential_duplicate_start.date():
+                        event = service.events().get(calendarId=CALENDAR_ID, eventId=potential_duplicate['id']).execute()
+                        event['start']['dateTime'] = match['start_time']
+                        event['end']['dateTime'] = match['end_time']
+
+                        updated_event = service.events().update(calendarId=CALENDAR_ID, eventId=event['id'], body=event).execute()
+                        print(Fore.LIGHTMAGENTA_EX + f'Time for the match {match['summary']} has changed to {match_datetime_start}')
+                        count_updated += 1
                         break
             else:
                 service.events().insert(calendarId=CALENDAR_ID, body=create_gcal_event(match)).execute()
         
-        matches_added = len(matches) - count_duplicates
-        if matches_added == 0:
-            print(Fore.LIGHTRED_EX + 'No events were added')
-        elif matches_added == 1:
-            print(Fore.GREEN + '1 event was successfully created')
-        else:
+        matches_added = len(matches) - count_duplicates - count_updated
+        if matches_added != 0:
             print(Fore.GREEN + f'{matches_added} events were successfully created')
+        else:
+            print(Fore.LIGHTRED_EX + 'No events were created')
+        if count_updated != 0:
+            print(Fore.LIGHTGREEN_EX + f'{count_updated} events were updated')
 
     except HttpError as error:
         print(f"An error occurred: {error}")
