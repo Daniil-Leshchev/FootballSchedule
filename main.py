@@ -19,10 +19,11 @@ def get_team_config():
         with open(filename, 'r') as f:
             return json.load(f)
     
-    team = input(Fore.CYAN + 'Type in your team to follow: ')
+    team_input = input(Fore.CYAN + "Type in your team(s) to follow. If you wanna add more than one team, separate them with ',': ")
     print()
+    teams = team_input.split(', ')
     json_data = {
-        'team': team,
+        'teams': teams,
     }
     with open(filename, 'w') as f:
         json.dump(json_data, f, indent=4)
@@ -86,6 +87,7 @@ def get_matches(user_team):
         page_parsed = BeautifulSoup(page.content, 'html.parser')
 
         if page_parsed.find('div', class_='not-found'):
+            os.remove('config.json')
             raise ValueError(Fore.LIGHTRED_EX + 'Your team is not found, check your spelling in the configuration')
         return page_parsed.find_all('div', class_='fixres__item')
         
@@ -111,25 +113,26 @@ def get_opponent(match, user_team):
 
 def create_events_list():
     config_results = get_team_config()
-    user_team = config_results['team']
+    user_teams = config_results['teams']
 
-    if user_team == '':
+    if user_teams == '':
         os.remove('config.json')
         raise ValueError(Fore.LIGHTRED_EX + 'No team specified')
     
     matches_list = []
     selected_months = select_months()
 
-    for match in get_matches(user_team):
-        date = get_match_datetime(match)
-        month_number = date[0][5:7]
-        if month_number not in selected_months:
-            continue
+    for team in user_teams:
+        for match in get_matches(team):
+            date = get_match_datetime(match)
+            month_number = date[0][5:7]
+            if month_number not in selected_months:
+                continue
 
-        matches_list.append({
-            'summary': f'{user_team} vs {get_opponent(match, user_team)}',
-            'start_time': date[0],
-            'end_time': date[1]
-        })
+            matches_list.append({
+                'summary': f'{team} vs {get_opponent(match, team)}',
+                'start_time': date[0],
+                'end_time': date[1]
+            })
 
     return matches_list, selected_months

@@ -3,4 +3,3 @@ improve:
 
 for other users and project growth:
 1. create requirements.txt file
-2. choosing many teams to follow
