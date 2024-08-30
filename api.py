@@ -29,10 +29,10 @@ def create_gcal_event(match):
         }
     }
 
-def select_month_matches(service, months, calendar_id):
+def select_month_matches(service, months, calendar_id, first_event_year):
     now = parse_date(str(datetime.now()))
     start = now + relativedelta(
-        month=int(months[0]), day=1, year=now.year,
+        month=int(months[0]), day=1, year=first_event_year,
         hour=0, minute=0, second=0, microsecond=0
     )
     end = start + relativedelta(months=+len(months))
@@ -62,12 +62,12 @@ def main():
 
     try:
         service = build("calendar", "v3", credentials=creds)
-        matches, selected_months, CALENDAR_ID = create_events_list()
+        matches, selected_months, CALENDAR_ID, first_event_year = create_events_list()
         if matches == []:
             print(Fore.LIGHTRED_EX + 'No events found')
             return
 
-        month_events = select_month_matches(service, selected_months, CALENDAR_ID)
+        month_events = select_month_matches(service, selected_months, CALENDAR_ID, first_event_year)
         count_duplicates = 0
         count_updated = 0
         

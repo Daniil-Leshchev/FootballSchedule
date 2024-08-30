@@ -73,11 +73,12 @@ def select_months():
         start_month_number = convert_month_name_to_number(start)
         end_month_number = convert_month_name_to_number(end)
 
-        if start_month_number >= end_month_number:
-            raise ValueError(Fore.LIGHTRED_EX + 'Start month number cannot be more than(or equal) end month')
+        if start_month_number > end_month_number:
+            end_month_number += 12
 
         for month_number in range(start_month_number, end_month_number + 1):
-            selected_months.append(format_month_number(month_number))
+            month_number_to_append = month_number if month_number <= 12 else month_number - 12
+            selected_months.append(format_month_number(month_number_to_append))
     else:
         selected_months.append(format_month_number(convert_month_name_to_number(selected_month_range)))
 
@@ -130,16 +131,21 @@ def create_events_list():
     selected_months = select_months()
 
     for team in user_teams:
+        found_first_match = False
+        start_date = None
         for match in get_matches(team):
-            date = get_match_datetime(match)
-            month_number = date[0][5:7]
+            start, end = get_match_datetime(match)
+            month_number = start[5:7]
             if month_number not in selected_months:
                 continue
+            elif not(found_first_match):
+                found_first_match = True
+                start_date = get_match_datetime(match)
 
             matches_list.append({
                 'summary': f'{team} vs {get_opponent(match, team)}',
-                'start_time': date[0],
-                'end_time': date[1]
+                'start_time': start,
+                'end_time': end
             })
 
-    return matches_list, selected_months, calendar_id
+    return matches_list, selected_months, calendar_id, int(start_date[0][:4])
