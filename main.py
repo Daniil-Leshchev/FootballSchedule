@@ -140,7 +140,7 @@ def create_events_list():
                 continue
             elif not(found_first_match):
                 found_first_match = True
-                start_date = get_match_datetime(match)
+                start_date = start
 
             matches_list.append({
                 'summary': f'{team} vs {get_opponent(match, team)}',
@@ -148,4 +148,4 @@ def create_events_list():
                 'end_time': end
             })
 
-    return matches_list, selected_months, calendar_id, int(start_date[0][:4])
+    return matches_list, selected_months, calendar_id, int(start_date[:4])
