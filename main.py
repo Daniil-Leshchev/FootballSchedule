@@ -20,10 +20,12 @@ def get_team_config():
             return json.load(f)
     
     team_input = input(Fore.CYAN + "Type in your team(s) to follow. If you wanna add more than one team, separate them with ',': ")
+    calendar_id = input(Fore.CYAN + "Type in your google calendar id: ")
     print()
     teams = team_input.split(', ')
     json_data = {
         'teams': teams,
+        'calendar_id': calendar_id
     }
     with open(filename, 'w') as f:
         json.dump(json_data, f, indent=4)
@@ -114,10 +116,15 @@ def get_opponent(match, user_team):
 def create_events_list():
     config_results = get_team_config()
     user_teams = config_results['teams']
-
+    calendar_id = config_results['calendar_id']
+    
     if user_teams == '':
         os.remove('config.json')
         raise ValueError(Fore.LIGHTRED_EX + 'No team specified')
+    
+    if not(re.match(r".*@group\.calendar\.google\.com$", calendar_id)):
+        os.remove('config.json')
+        raise ValueError(Fore.LIGHTRED_EX + 'Invalid calendar id')
     
     matches_list = []
     selected_months = select_months()
@@ -135,4 +142,4 @@ def create_events_list():
                 'end_time': date[1]
             })
 
-    return matches_list, selected_months
+    return matches_list, selected_months, calendar_id

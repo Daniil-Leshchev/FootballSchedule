@@ -16,7 +16,6 @@ from colorama import init, Fore
 init(autoreset=True)
 
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
-CALENDAR_ID = 'g22faufip96tqjv8cjv6cflt00@group.calendar.google.com'
 
 def create_gcal_event(match):
     return {
@@ -31,7 +30,7 @@ def create_gcal_event(match):
         }
     }
 
-def select_month_matches(service, months):
+def select_month_matches(service, months, calendar_id):
     now = parse_date(str(datetime.now()))
     start = now + relativedelta(
         month=int(months[0]), day=1, year=now.year,
@@ -40,7 +39,7 @@ def select_month_matches(service, months):
     end = start + relativedelta(months=+len(months))
 
     events = service.events().list(
-        calendarId=CALENDAR_ID, orderBy='startTime',
+        calendarId=calendar_id, orderBy='startTime',
         singleEvents=True, timeMin=start.isoformat() + SOURCE_TIMEZONE, 
         timeMax=end.isoformat() + SOURCE_TIMEZONE
     ).execute()
@@ -64,12 +63,12 @@ def main():
 
     try:
         service = build("calendar", "v3", credentials=creds)
-        matches, selected_months = create_events_list()
+        matches, selected_months, CALENDAR_ID = create_events_list()
         if matches == []:
             print(Fore.LIGHTRED_EX + 'No events found')
             return
 
-        month_events = select_month_matches(service, selected_months)
+        month_events = select_month_matches(service, selected_months, CALENDAR_ID)
         count_duplicates = 0
         count_updated = 0
         
