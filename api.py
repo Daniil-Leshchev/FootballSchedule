@@ -9,7 +9,6 @@ from main import SOURCE_TIMEZONE
 from dateutil.parser import parse as parse_date
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
-import json
 from pytz import utc as UTC
 from colorama import init, Fore
 init(autoreset=True)

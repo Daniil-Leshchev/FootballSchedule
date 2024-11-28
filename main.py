@@ -10,7 +10,7 @@ import json
 from colorama import init, Fore
 init(autoreset=True)
 
-SOURCE_TIMEZONE = '+01:00'
+SOURCE_TIMEZONE = '+00:00'
 
 def get_team_config():
     filename = 'config.json'
